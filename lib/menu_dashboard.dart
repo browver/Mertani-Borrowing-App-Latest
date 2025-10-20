@@ -481,9 +481,9 @@ class _MyHomePageState extends State<MyHomePage>
                           colors: [
                             if (role == 'user') ...[
                               Colors.indigo[400]!,
-                              Colors.indigo[200]!, // indigo lebih muda
-                              Colors.indigo[100]!, // indigo sangat muda
-                              Colors.indigo[200]!, // indigo lebih muda
+                              Colors.indigo[200]!, 
+                              Colors.indigo[100]!, 
+                              Colors.indigo[200]!,
                               Colors.indigo[400]!,
                             ],
                             if (role == 'admin') ...[

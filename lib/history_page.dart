@@ -165,7 +165,7 @@ class _HistoryPageState extends State<HistoryPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         title: Text(
-          'Riwayat Transaksi',
+          'Riwayat Mertani App',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w700,
