@@ -7,7 +7,6 @@ workflows:
       flutter: stable
       xcode: latest
       groups:
-        - google_play
         - keystore_credentials
       vars:
         PACKAGE_NAME: "com.user_borrow_app"
