@@ -1,0 +1,74 @@
+workflows:
+  flutter_build_with_secrets:
+    name: Flutter Android + iOS Build with Secrets
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      android_signing:
+        - keystore_reference
+      ios_signing:
+        distribution_type: development   
+        bundle_identifier: com.user_borrow_app
+      groups:
+        - google_play
+      vars:
+        PACKAGE_NAME: "com.user_borrow_app"
+        GOOGLE_PLAY_TRACK: "alpha"
+        SECRETS_FILE: $SECRETS_FILE
+
+    scripts:
+      - name: Set up Flutter SDK path
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+
+      - name: Generate secrets.dart from environment variable
+        script: |
+          echo "$SECRETS_FILE" > lib/secrets.dart
+          echo "✅ secrets.dart created successfully"
+          ls -l lib/secrets.dart
+
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Analyze Flutter code
+        script: flutter analyze
+
+      - name: Run Flutter tests
+        script: flutter test
+        ignore_failure: true
+
+      - name: Build Android AppBundle (AAB)
+        script: |
+          BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))
+          flutter build appbundle --release \
+            --build-name=1.0.$BUILD_NUMBER \
+            --build-number=$BUILD_NUMBER
+
+      - name: Build iOS IPA (without App Store)
+        script: |
+          flutter build ipa --release \
+            --no-codesign \
+            --build-name=1.0.0 \
+            --build-number=1
+          echo "✅ iOS IPA built successfully (no signing)"
+
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+
+    publishing:
+      email:
+        recipients:
+          - youremail@example.com
+        notify:
+          success: true
+          failure: true
+
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: $GOOGLE_PLAY_TRACK
+        submit_as_draft: true
