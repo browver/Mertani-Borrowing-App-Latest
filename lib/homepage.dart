@@ -459,12 +459,16 @@ class _HomePageState extends State<HomePage> {
 
                   if (!context.mounted) return;
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Berhasil ambil $takeQty $productName'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  toastification.show(
+                    style: ToastificationStyle.flatColored,
+                    icon: Icon(Icons.check),
+                    backgroundColor: Colors.green[200],
+                    foregroundColor: Colors.green,
+                    borderRadius: BorderRadius.circular(12),
+                    context: context,
+                    title: Text('Berhasil mengambil $productName'),
+                    autoCloseDuration: const Duration(seconds: 3),
+                    dragToClose: true,
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -511,15 +515,6 @@ class _HomePageState extends State<HomePage> {
     });
 
     firestoreServices.seedDefaultCategories();
-    _loadRole();
-  }
-
-  void _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      role = prefs.getString('role') ?? 'user';
-    });
-
     Future.delayed(const Duration(milliseconds: 1800), () {
       if (mounted) {
         setState(() {
@@ -623,7 +618,7 @@ class _HomePageState extends State<HomePage> {
             child: _isInitialLoading
                 ? Center(
                     child: Lottie.network(
-                      'https://lottie.host/e4db3417-45c2-437f-a49f-d273726a12bf/9q4nGsLcOT.json',
+                      'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json',
                     ),
                   )
                 : StreamBuilder(
@@ -726,7 +721,7 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   // Product Image
                                   Expanded(
-                                    flex: role == 'admin' ? 6 : 4,
+                                    flex: 6,
                                     child: Container(
                                       width: double.infinity,
                                       decoration: BoxDecoration(
@@ -784,7 +779,7 @@ class _HomePageState extends State<HomePage> {
 
                                   // Product Info
                                   Expanded(
-                                    flex: role == 'admin' ? 10 : 4,
+                                    flex: 10,
                                     child: Padding(
                                       padding: EdgeInsets.all(12),
                                       child: Column(
@@ -884,7 +879,6 @@ class _HomePageState extends State<HomePage> {
                                           ),
 
                                           // Take Button
-                                          if (role == 'admin')
                                             SizedBox(
                                               width: double.infinity,
                                               child: ElevatedButton.icon(
@@ -941,7 +935,7 @@ class _HomePageState extends State<HomePage> {
                       } else {
                         return Center(
                           child: Lottie.network(
-                            'https://lottie.host/e4db3417-45c2-437f-a49f-d273726a12bf/9q4nGsLcOT.json',
+                            'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json',
                           ),
                         );
                       }

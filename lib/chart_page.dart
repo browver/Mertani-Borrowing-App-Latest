@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:user_app/homepage.dart';
+import 'package:lottie/lottie.dart';
 
 class ChartPage extends StatefulWidget {
   ChartPage({super.key});
@@ -83,7 +84,7 @@ class ChartPageState extends State<ChartPage> {
               (itemBorrowData[itemKey]!['totalAmount'] as int) + amount;
         } else {
           itemBorrowData[itemKey] = {
-            'productId' : productId,
+            'productId': productId,
             'productName': itemName,
             'sku': sku,
             'category': category,
@@ -159,7 +160,11 @@ class ChartPageState extends State<ChartPage> {
         foregroundColor: Colors.white,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Lottie.network(
+                'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json',
+              ),
+            )
           : SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,

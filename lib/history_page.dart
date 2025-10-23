@@ -272,7 +272,7 @@ class _HistoryPageState extends State<HistoryPage> {
           Expanded(
             child: _isInitialLoading ? Center(
               child: Lottie.network(
-                'https://lottie.host/e4db3417-45c2-437f-a49f-d273726a12bf/9q4nGsLcOT.json'
+                'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json'
               ),
             ) :
             StreamBuilder(
@@ -284,7 +284,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 if (!snapshot.hasData) {
                   return Center(
                     child: Lottie.network(
-                      'https://lottie.host/e4db3417-45c2-437f-a49f-d273726a12bf/9q4nGsLcOT.json'
+                      'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json'
                     ),
                   );
                 }

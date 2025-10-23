@@ -23,6 +23,14 @@ workflows:
           echo "✅ secrets.dart created successfully"
           ls -l lib/secrets.dart
 
+      - name: Generate secrets.dart from environment variable
+        script: |
+          echo "$SECRETS_FILE" > lib/secrets.dart
+          echo "✅ secrets.dart created successfully"
+          ls -l lib/secrets.dart
+      
+      
+
       - name: Build Android APK
         script: |
           flutter build apk --release --no-tree-shake-icons

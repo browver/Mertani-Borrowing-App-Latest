@@ -68,7 +68,6 @@ Future<void> _handleLogin() async {
       if (userQuery.docs.isNotEmpty) {
         var userData = userQuery.docs.first.data() as Map<String, dynamic>;
         String? storedPassword = userData['password'];
-        String role = userData['role'];
 
         if(storedPassword == null || storedPassword.isEmpty) {
           throw Exception('Password belum di-set');
@@ -77,7 +76,6 @@ Future<void> _handleLogin() async {
         if (inputPassword == storedPassword) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('isLoggedIn', true);
-          await prefs.setString('role', role);
           await prefs.setString('userId', userQuery.docs.first.id);
           await prefs.setString('username', userData['username']);
           await FirestoreServices().updateUnknownHistroryEntries();
@@ -90,17 +88,13 @@ Future<void> _handleLogin() async {
           _usernameController.clear();
           _passwordController.clear();
 
-        if (role == 'user' || role == 'admin') {
           Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
           return;
-        } 
-        else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Pengguna tidak dikenali'), backgroundColor: Colors.red),
-          );
         }
-        return;
-        }
+        if(!mounted) return;               
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pengguna tidak dikenali'), backgroundColor: Colors.red),
+        );
       }
 
     // Login Gagal

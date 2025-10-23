@@ -90,16 +90,8 @@ class _MyHomePageState extends State<MyHomePage>
         categoryIcons = {for (var cat in catList) cat.name: cat.icon};
       });
     });
-    _loadRole();
     _loadUserInfo();
     _loadStats();
-  }
-
-  void _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      role = prefs.getString('role') ?? 'user';
-    });
   }
 
   void _loadUserInfo() async {
@@ -426,18 +418,9 @@ class _MyHomePageState extends State<MyHomePage>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  if (role == 'admin') ...[
                     Colors.indigo[400]!,
                     Colors.indigo[300]!,
                     Colors.indigo[50]!,
-                  ] else if (role == 'user') ...[
-                    Colors.indigo[300]!,
-                    Colors.indigo[200]!,
-                    Colors.indigo[50]!,
-                  ] else ...[
-                    Colors.indigo[300]!,
-                    Colors.indigo[100]!,
-                  ],
                 ],
               ),
             ),
@@ -479,34 +462,18 @@ class _MyHomePageState extends State<MyHomePage>
                           ],
                           // Color gradient card
                           colors: [
-                            if (role == 'user') ...[
-                              Colors.indigo[400]!,
-                              Colors.indigo[200]!, 
-                              Colors.indigo[100]!, 
-                              Colors.indigo[200]!,
-                              Colors.indigo[400]!,
-                            ],
-                            if (role == 'admin') ...[
                               Color(0xFF1A237E),
                               Color(0xFF283593),
                               Colors.indigo[300]!,
                               Color(0xFF283593),
                               Color(0xFF1A237E),
-                            ],
                           ],
                         ),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          if (role == 'admin')
                             BoxShadow(
                               color: Colors.indigo.withValues(alpha: 0.4),
                               blurRadius: 15,
-                              offset: const Offset(0, 2),
-                            ),
-                          if (role == 'user')
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
                         ],
@@ -517,9 +484,7 @@ class _MyHomePageState extends State<MyHomePage>
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: role == 'admin'
-                                  ? Colors.indigo[400]
-                                  : Colors.indigo[300],
+                              color: Colors.indigo[400],
                               borderRadius: BorderRadius.circular(15),
                               boxShadow: [
                                 BoxShadow(
@@ -552,9 +517,7 @@ class _MyHomePageState extends State<MyHomePage>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  role == 'admin'
-                                      ? 'Kelola barang dengan mudah'
-                                      : 'Pinjam barang yang Anda butuhkan',
+                                    'Kelola barang dengan mudah',
                                   style: GoogleFonts.poppins(
                                     color: Colors.white70,
                                     fontWeight: FontWeight.bold,
@@ -571,7 +534,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
 
                 // Stats Cards (User specific)
-                if (role == 'user' || role == 'admin')
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -693,8 +655,7 @@ class _MyHomePageState extends State<MyHomePage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        role == 'admin' ? 'Kelola Inventori' : 'Akses Cepat',
+                      Text( 'Kelola Inventori',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -777,7 +738,6 @@ class _MyHomePageState extends State<MyHomePage>
                         }),
 
                         // User interface
-                        if (role == 'admin')
                           _buildGridItem(
                             context,
                             'Users',

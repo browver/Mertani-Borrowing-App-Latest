@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:user_app/firebase_services.dart';
 import 'package:user_app/menu_dashboard.dart';
 import 'package:user_app/notification_service.dart';
+import 'package:lottie/lottie.dart';
+
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -233,8 +235,8 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircularProgressIndicator(
-                        color: Colors.indigo,
+                      Lottie.network(
+                        'https://lottie.host/0a4fbead-d71b-4061-88f0-1083a47ecf18/QddbujjLqn.json',
                       ),
                       const SizedBox(height: 16),
                       Text(
