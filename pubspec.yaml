@@ -51,18 +51,17 @@ dependencies:
   google_fonts: ^6.2.1
   firebase_database: ^11.3.6
   intl: ^0.20.2
-  pdf: ^3.11.3
   path: ^1.9.1
   path_provider: ^2.1.5
-  printing: ^5.14.2
   shared_preferences: ^2.5.3
-  flutter_speed_dial: ^7.0.0
   firebase_messaging: ^15.2.10
   pretty_animated_buttons: ^0.0.2
   timezone: ^0.10.1
   flutter_timezone: ^5.0.0
   toastification: ^3.0.3
   fl_chart: ^1.1.1
+  animated_flip_counter: ^0.3.4
+  cached_network_image: ^3.4.1
 
   # modal_progress_hud: ^0.1.3
 

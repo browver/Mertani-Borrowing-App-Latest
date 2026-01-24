@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -60,10 +61,10 @@ class _MyAppState extends State<MyApp> {
     await NotificationService().initNotification(username);
   }
 
-  Future<bool> checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isLoggedIn') ?? false;
-  }
+  // Future<bool> checkLoginStatus() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getBool('isLoggedIn') ?? false;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -77,13 +78,15 @@ class _MyAppState extends State<MyApp> {
         '/category': (context) => const CategoryPage(),
         '/userpage': (context) => const UserPage(),
       },
-      home: FutureBuilder<bool>(
-        future: checkLoginStatus(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          return snapshot.data == true ? const MyHomePage() : const LoginPage();
+          return snapshot.hasData
+            ? const MyHomePage() 
+            : const LoginPage();
         },
       ),
     );

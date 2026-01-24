@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:user_app/firebase_services.dart';
 import 'package:toastification/toastification.dart';
-// import 'package:flutter_application_2/history_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:user_app/image_model.dart';
 import 'package:user_app/notification_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -241,13 +241,11 @@ class _HomePageState extends State<HomePage> {
                   final username = await getCurrentUsername();
 
                   // Scheduler
-                  // NotificationService().cancelNotification(100);
-                  // NotificationService().cancelNotification(101);
                   NotificationService().cancelAllNotifications();
                   NotificationService().scheduleBorrowingNotifications(
-                    username: username, testing: true
+                    username: username,
+                    testing: true,
                   );
-                  // NotificationService().updateReminderNotification(username);
 
                   if (!context.mounted) return;
                   Navigator.pop(context); // borrowQty, productName
@@ -527,16 +525,15 @@ class _HomePageState extends State<HomePage> {
     if (widget.openBorrowDialogOnStart && widget.borrowDialogData != null) {
       Future.delayed(const Duration(milliseconds: 1800), () async {
         if (mounted) {
-
           final docId = widget.borrowDialogData!['docId'] ?? '';
           final category = widget.borrowDialogData!['category'] ?? '';
 
           final docSnapshot = await FirebaseFirestore.instance
-            .collection('categories')
-            .doc(category)
-            .collection('items')
-            .doc(docId)
-            .get();
+              .collection('categories')
+              .doc(category)
+              .collection('items')
+              .doc(docId)
+              .get();
 
           final availableQuantity = docSnapshot.data()?['amount'] ?? 0;
 
@@ -637,7 +634,6 @@ class _HomePageState extends State<HomePage> {
                           final name = (data['name'] ?? data['item'] ?? '')
                               .toString()
                               .toLowerCase();
-                          // final category = data['category']?.toString().toLowerCase() ?? '';
                           final quantity = data['amount'] ?? 0;
 
                           final matchesSearch =
@@ -645,7 +641,6 @@ class _HomePageState extends State<HomePage> {
                           final matchesCategory =
                               selectedFilterCategory == null ||
                               name.contains(searchText);
-                          // category == selectedFilterCategory!.toLowerCase();
                           final hasStock = quantity > 0;
 
                           return matchesSearch && matchesCategory && hasStock;
@@ -684,6 +679,7 @@ class _HomePageState extends State<HomePage> {
                           );
                         }
 
+                        // Product Box Section
                         return GridView.builder(
                           padding: EdgeInsets.all(16),
                           gridDelegate:
@@ -731,48 +727,65 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       child: imageUrl.isNotEmpty
-                                          ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                    top: Radius.circular(16),
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (_) => FullImageView(
+                                                    imageUrl: imageUrl,
+                                                    tag: docId,
                                                   ),
-                                              child: Image.network(
-                                                imageUrl,
-                                                height: 140,
-                                                width: double.infinity,
-                                                fit: BoxFit.cover,
-                                                loadingBuilder:
-                                                    (
-                                                      context,
-                                                      child,
-                                                      loadingProgress,
-                                                    ) {
-                                                      if (loadingProgress ==
-                                                          null) {
-                                                        return child;
-                                                      } else {
-                                                        return Center(
+                                                );
+                                              },
+                                              child: Hero(
+                                                tag: docId,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                          16,
+                                                        ),
+                                                      ),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: imageUrl,
+                                                    height: 140,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                    memCacheWidth: 600,
+                                                    memCacheHeight: 800,
+                                                    placeholder:
+                                                        (
+                                                          context,
+                                                          url,
+                                                        ) => Center(
                                                           child:
                                                               CircularProgressIndicator(
                                                                 color: Colors
                                                                     .indigo[600],
                                                               ),
-                                                        );
-                                                      }
-                                                    },
-                                                errorBuilder:
-                                                  (context, error, stackTrace,) => 
-                                                  Icon(
-                                                    Icons.image_not_supported,
-                                                    size: 40,
-                                                    color: Colors.grey[400],
+                                                        ),
+                                                    errorWidget:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          url,
+                                                        ) => Icon(
+                                                          Icons
+                                                              .image_not_supported,
+                                                          size: 40,
+                                                          color:
+                                                              Colors.grey[400],
+                                                        ),
                                                   ),
+                                                ),
                                               ),
                                             )
-                                          : Icon(
-                                              Icons.inventory_2_outlined,
-                                              size: 40,
-                                              color: Colors.indigo[600],
+                                          : Center(
+                                              child: Icon(
+                                                Icons.inventory_2_outlined,
+                                                size: 40,
+                                                color: Colors.indigo[600],
+                                              ),
                                             ),
                                     ),
                                   ),
@@ -780,105 +793,119 @@ class _HomePageState extends State<HomePage> {
                                   // Product Info
                                   Expanded(
                                     flex: 10,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(12),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            product,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: product.length > 18
-                                                  ? 10
-                                                  : 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[800],
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(4),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.shade200,
+                                            offset: Offset(2, 2),
+                                            blurRadius: 2,
                                           ),
-
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 3,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: quantity > 0
-                                                  ? Colors.green[50]
-                                                  : Colors.red[50],
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                color: quantity > 0
-                                                    ? Colors.green[200]!
-                                                    : Colors.red[200]!,
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'Tersedia: $quantity',
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product,
                                               style: GoogleFonts.poppins(
-                                                fontSize: 10,
+                                                fontSize: product.length > 18
+                                                    ? 10
+                                                    : 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey[800],
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 3,
+                                              ),
+                                              decoration: BoxDecoration(
                                                 color: quantity > 0
-                                                    ? Colors.green[600]
-                                                    : Colors.red[600],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: product.length > 18
-                                                ? 10
-                                                : 8,
-                                          ),
-
-                                          // Borrow Button
-                                          SizedBox(
-                                            width: double.infinity,
-                                            child: ElevatedButton.icon(
-                                              onPressed: quantity > 0
-                                                  ? () {
-                                                      HapticFeedback.lightImpact();
-                                                      showBorrowDialog(
-                                                        product,
-                                                        docId,
-                                                        quantity,
-                                                        sku,
-                                                        category,
-                                                        imageUrl,
-                                                      );
-                                                    }
-                                                  : null,
-
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Colors.indigo[500],
-                                                foregroundColor: Colors.white,
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 6,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
+                                                    ? Colors.green[50]
+                                                    : Colors.red[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: quantity > 0
+                                                      ? Colors.green[200]!
+                                                      : Colors.red[200]!,
+                                                  width: 0.5,
                                                 ),
                                               ),
-                                              icon: Icon(
-                                                Icons.shopping_bag_outlined,
-                                                size: 14,
-                                              ),
-                                              label: Text(
-                                                'Pinjam',
+                                              child: Text(
+                                                'Tersedia: $quantity',
                                                 style: GoogleFonts.poppins(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 10,
+                                                  color: quantity > 0
+                                                      ? Colors.green[600]
+                                                      : Colors.red[600],
+                                                  fontWeight: FontWeight.w500,
                                                 ),
                                               ),
                                             ),
-                                          ),
+                                            SizedBox(
+                                              height: product.length > 18
+                                                  ? 10
+                                                  : 8,
+                                            ),
 
-                                          // Take Button
+                                            // Borrow Button
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton.icon(
+                                                onPressed: quantity > 0
+                                                    ? () {
+                                                        HapticFeedback.lightImpact();
+                                                        showBorrowDialog(
+                                                          product,
+                                                          docId,
+                                                          quantity,
+                                                          sku,
+                                                          category,
+                                                          imageUrl,
+                                                        );
+                                                      }
+                                                    : null,
+
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.deepOrange[400],
+                                                  foregroundColor: Colors.white,
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 6,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                ),
+                                                icon: Icon(
+                                                  Icons.shopping_bag_outlined,
+                                                  size: 14,
+                                                ),
+                                                label: Text(
+                                                  'Pinjam',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+
+                                            // Take Button
                                             SizedBox(
                                               width: double.infinity,
                                               child: ElevatedButton.icon(
@@ -898,7 +925,7 @@ class _HomePageState extends State<HomePage> {
 
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor:
-                                                      Colors.indigo[500],
+                                                      Colors.deepOrange[400],
                                                   foregroundColor: Colors.white,
                                                   padding: EdgeInsets.symmetric(
                                                     vertical: 6,
@@ -923,7 +950,8 @@ class _HomePageState extends State<HomePage> {
                                                 ),
                                               ),
                                             ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),

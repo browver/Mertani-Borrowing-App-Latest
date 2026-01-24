@@ -1,9 +1,10 @@
+import 'dart:ui';
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:user_app/chart_page.dart';
 import 'package:user_app/homepage.dart';
 import 'package:user_app/history_page.dart';
 import 'package:user_app/firebase_services.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,9 +34,9 @@ class _MyHomePageState extends State<MyHomePage>
     final hour = DateTime.now().hour;
     if (hour >= 5 && hour < 12) {
       return "Selamat Pagi";
-    } else if (hour >= 12 && hour < 17) {
+    } else if (hour >= 12 && hour < 15) {
       return "Selamat Siang";
-    } else if (hour >= 17 && hour < 19) {
+    } else if (hour >= 15 && hour < 18) {
       return "Selamat Sore";
     } else {
       return "Selamat Malam";
@@ -60,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
@@ -343,6 +343,12 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
+    Positioned.fill(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(color: Colors.black.withValues(alpha: 0.08)),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -352,7 +358,7 @@ class _MyHomePageState extends State<MyHomePage>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.indigo[700]!, Colors.indigo[700]!],
+              colors: [Colors.indigo[900]!, Colors.indigo[800]!],
             ),
           ),
         ),
@@ -409,7 +415,7 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       body: Stack(
         children: [
-          // Layer 2: gradient
+          // Layer 2: main background
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -417,24 +423,27 @@ class _MyHomePageState extends State<MyHomePage>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                    Colors.indigo[400]!,
-                    Colors.indigo[300]!,
-                    Colors.indigo[50]!,
-                ],
+                colors: [Colors.grey[400]!, Colors.white, Colors.grey[300]!],
               ),
             ),
           ),
 
-          // Layer 1: solid color overlay at top
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(color: Colors.black.withValues(alpha: 0.08)),
+            ),
+          ),
+
+          // Layer 1: top layer
           Container(
             width: double.infinity,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.indigo[700]!,
+              color: Colors.indigo[800]!,
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
           ),
@@ -460,31 +469,32 @@ class _MyHomePageState extends State<MyHomePage>
                             (_shimmerAnimation.value + 0.08).clamp(0.0, 1.0),
                             (_shimmerAnimation.value + 0.25).clamp(0.0, 1.0),
                           ],
+
                           // Color gradient card
                           colors: [
-                              Color(0xFF1A237E),
-                              Color(0xFF283593),
-                              Colors.indigo[300]!,
-                              Color(0xFF283593),
-                              Color(0xFF1A237E),
+                            Colors.deepOrange[400]!,
+                            Colors.deepOrange[400]!,
+                            Colors.deepOrange[200]!,
+                            Colors.deepOrange[400]!,
+                            Colors.deepOrange[400]!,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                            BoxShadow(
-                              color: Colors.indigo.withValues(alpha: 0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 2),
-                            ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                         ],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 60,
-                            height: 60,
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.indigo[400],
+                              color: Colors.grey[300],
                               borderRadius: BorderRadius.circular(15),
                               boxShadow: [
                                 BoxShadow(
@@ -517,7 +527,7 @@ class _MyHomePageState extends State<MyHomePage>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                    'Kelola barang dengan mudah',
+                                  'Kelola barang dengan mudah',
                                   style: GoogleFonts.poppins(
                                     color: Colors.white70,
                                     fontWeight: FontWeight.bold,
@@ -534,118 +544,133 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
 
                 // Stats Cards (User specific)
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: StreamBuilder<int>(
-                            stream: _getBorrowedItemsStream(),
-                            builder: (context, snapshot) {
-                              final borrowedCount = snapshot.data ?? 0;
-                              return Container(
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.assignment_outlined,
-                                      size: 32,
-                                      color: Colors.orange[600],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      '$borrowedCount',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.deepOrange[400]!,
+                      width: 3.0
+                    ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 2,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: StreamBuilder<int>(
+                          stream: _getBorrowedItemsStream(),
+                          builder: (context, snapshot) {
+                            final borrowedCount = snapshot.data ?? 0;
+                            return Container(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.assignment_outlined,
+                                        size: 30,
                                         color: Colors.orange[600],
                                       ),
-                                    ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'Sedang Dipinjam',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.bold,
+                                      SizedBox(width: 8),
+
+                                      // animated count
+                                      AnimatedFlipCounter(
+                                        value: borrowedCount,
+                                        duration: Duration(milliseconds: 1500),
+                                        curve: Curves.easeOutCubic,
+                                        textStyle: GoogleFonts.poppins(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange,
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
+                                    ],
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Dipinjam',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: StreamBuilder<int>(
-                            stream: _getAvailableItemsStream(),
-                            builder: (context, snapshot) {
-                              final availableCount = snapshot.data ?? 0;
-                              return Container(
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
+                      ),
+
+                      // Divider
+                      Container(
+                        height: 100,
+                        width: 1,
+                        color: Colors.grey[300],
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      Expanded(
+                        child: StreamBuilder<int>(
+                          stream: _getAvailableItemsStream(),
+                          builder: (context, snapshot) {
+                            final availableCount = snapshot.data ?? 0;
+                            return Container(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.inventory_2_outlined,
+                                        size: 30,
+                                        color: Colors.indigo[600],
                                       ),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.inventory_2_outlined,
-                                      size: 32,
-                                      color: Colors.green[600],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      '$availableCount',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green[600],
+                                      SizedBox(width: 8),
+                                      // animated count
+                                      AnimatedFlipCounter(
+                                        value: availableCount,
+                                        duration: Duration(milliseconds: 1500),
+                                        curve: Curves.easeOutCubic,
+                                        hideLeadingZeroes: true,
+                                        textStyle: GoogleFonts.poppins(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.indigo,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Kategori',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'Kategori Tersedia',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
 
                 SizedBox(height: 24),
 
@@ -655,18 +680,19 @@ class _MyHomePageState extends State<MyHomePage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text( 'Kelola Inventori',
+                      Text(
+                        'Kelola Inventori',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(2, 2),
-                              blurRadius: 4,
-                              color: Colors.black26,
-                            ),
-                          ],
+                          color: Colors.grey[700],
+                          // shadows: [
+                          //   Shadow(
+                          //     offset: Offset(0, 2),
+                          //     blurRadius: 2,
+                          //     color: Colors.black26,
+                          //   ),
+                          // ],
                         ),
                       ),
                       TextButton.icon(
@@ -682,18 +708,18 @@ class _MyHomePageState extends State<MyHomePage>
                           // arrow
                           Icons.arrow_forward,
                           size: 16,
-                          color: Colors.white,
+                          color: Colors.grey[700],
                         ),
                         label: Text(
                           'Lihat Semua',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: Colors.grey[700],
                             shadows: [
                               Shadow(
-                                offset: Offset(2, 2),
-                                blurRadius: 4,
+                                offset: Offset(1, 2),
+                                blurRadius: 1,
                                 color: Colors.black26,
                               ),
                             ],
@@ -704,7 +730,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                 ),
 
-                // Main Menu Grid
+                // Category Section
                 if (categories.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(16),
@@ -738,27 +764,27 @@ class _MyHomePageState extends State<MyHomePage>
                         }),
 
                         // User interface
-                          _buildGridItem(
-                            context,
-                            'Users',
-                            Icons.people,
-                            Colors.purple,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UserPage(),
-                                ),
-                              );
-                            },
-                          ),
+                        _buildGridItem(
+                          context,
+                          'Users',
+                          Icons.people,
+                          Colors.deepOrange[600]!,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserPage(),
+                              ),
+                            );
+                          },
+                        ),
 
                         // Graphic chart
                         _buildGridItem(
                           context,
                           'Chart',
                           Icons.bar_chart,
-                          Colors.purple,
+                          Colors.deepOrange[600]!,
                           () {
                             Navigator.push(
                               context,
@@ -774,7 +800,7 @@ class _MyHomePageState extends State<MyHomePage>
                           context,
                           'Riwayat',
                           Icons.history,
-                          Colors.purple[600]!,
+                          Colors.deepOrange[600]!,
                           () {
                             Navigator.push(
                               context,
@@ -793,50 +819,33 @@ class _MyHomePageState extends State<MyHomePage>
           ),
         ],
       ),
-      floatingActionButton: role == 'alien'
-          ? SpeedDial(
-              icon: Icons.add,
-              activeIcon: Icons.close,
-              backgroundColor: Colors.blue[400],
-              foregroundColor: Colors.white,
-              overlayOpacity: 0.4,
-              children: [
-                SpeedDialChild(
-                  child: const Icon(Icons.category),
-                  label: 'Kelola Kategori',
-                  backgroundColor: Colors.blue[400],
-                  foregroundColor: Colors.white,
-                  onTap: () {
-                    Navigator.pushNamed(context, '/category');
-                  },
-                ),
-              ],
-            )
-          : Padding(
-              padding: const EdgeInsets.only(bottom: 70),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          MyBorrowingsPage(userName: userName, isSelf: true),
-                    ),
-                  );
-                },
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-                icon: Icon(Icons.assignment_outlined),
-                label: Text(
-                  'Pinjaman Saya',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
+
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 70),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    MyBorrowingsPage(userName: userName, isSelf: true),
               ),
-            ),
+            );
+          },
+          backgroundColor: Colors.deepOrange[400],
+          foregroundColor: Colors.white,
+          icon: Icon(Icons.assignment_outlined),
+          label: Text(
+            'Pinjaman Saya',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
     );
   }
 
+  // Category Box
   Widget _buildGridItem(
     BuildContext context,
     String title,
@@ -853,7 +862,7 @@ class _MyHomePageState extends State<MyHomePage>
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
+              blurRadius: 2,
               offset: const Offset(0, 2),
             ),
           ],
@@ -1058,7 +1067,9 @@ class MyBorrowingsPage extends StatelessWidget {
                                   child: Text(
                                     productName,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 16,
+                                      fontSize: productName.length <= 19
+                                          ? 16
+                                          : 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey[800],
                                     ),
@@ -1115,8 +1126,6 @@ class MyBorrowingsPage extends StatelessWidget {
                                   ],
                                 ),
 
-                                Spacer(),
-
                                 // Second Borrowing Page Button
                                 if (status == 'dikembalikan' &&
                                     isLastThree &&
@@ -1124,8 +1133,8 @@ class MyBorrowingsPage extends StatelessWidget {
                                     isSelf)
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                      left: 24,
-                                      top: 8,
+                                      left: 18,
+                                      top: 16,
                                     ),
                                     child: ElevatedButton(
                                       onPressed: () {
@@ -1368,7 +1377,7 @@ class MyBorrowingsPage extends StatelessWidget {
                 );
               } else {
                 return Center(
-                  child: CircularProgressIndicator(color: Colors.blue[400]),
+                  child: CircularProgressIndicator(color: Colors.indigo[400]),
                 );
               }
             },

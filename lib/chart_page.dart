@@ -9,6 +9,7 @@ class ChartPage extends StatefulWidget {
   ChartPage({super.key});
 
   final Color dark = Colors.indigo;
+  final Color orange = Colors.deepOrange[400]!;
   final Color normal = Colors.indigo[400]!;
   final Color light = Colors.indigo[200]!;
 
@@ -201,6 +202,7 @@ class ChartPageState extends State<ChartPage> {
                                   barTouchData: BarTouchData(
                                     enabled: true,
                                     touchTooltipData: BarTouchTooltipData(
+                                      getTooltipColor: (group) => Colors.indigo,
                                       getTooltipItem:
                                           (group, groupIndex, rod, rodIndex) {
                                             String category =
@@ -423,7 +425,7 @@ class ChartPageState extends State<ChartPage> {
                         _loadChartData();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
+                        backgroundColor: Colors.deepOrange[400],
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -469,7 +471,7 @@ class ChartPageState extends State<ChartPage> {
           BarChartRodData(
             toY: count.toDouble(),
             gradient: LinearGradient(
-              colors: [widget.dark, widget.normal, widget.light],
+              colors: [widget.orange, widget.orange, widget.orange],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ),

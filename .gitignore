@@ -51,4 +51,5 @@ app.*.map.json
 **/ios/Runner/GoogleService-Info.plist
 
 /lib/secrets.dart
+/lib/auth_service.dart
 functions/node_modules/

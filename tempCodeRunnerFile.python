@@ -1,0 +1,16 @@
+def isSameTree(self, p, q) -> bool:
+    pres = []
+    qres = []
+    def inod(x):
+        if not x:
+            return
+        inod(x.left)
+        pres.append(x.val)
+        inod(x.right)
+    inod(p)
+    inod(q)
+    return pres == qres
+
+p = [1,2,3]
+q = [1,2,3]
+isSameTree(p, q)

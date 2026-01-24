@@ -530,7 +530,7 @@ Future<void> _handleLogin() async {
                             ),
                             SizedBox(width: 6), 
                             Text(
-                              'Safe & Encrypted',
+                              'Safe Encrypted',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 12, 
@@ -541,7 +541,7 @@ Future<void> _handleLogin() async {
                         ),
                         SizedBox(height: 8), 
                         Text(
-                          '  © 2025 Mertani App',
+                          '  © Mertani App',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 11, 

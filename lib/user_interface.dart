@@ -123,7 +123,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFFF7F8FC),
       appBar: AppBar(
         elevation: 0,
-        title: Text('Kelola Pengguna', style: GoogleFonts.poppins(
+        title: Text('Pengguna', style: GoogleFonts.poppins(
           color: Colors.white,
           fontWeight: FontWeight.w600,
           fontSize: 20,
@@ -397,16 +397,12 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
                                           width: 50,
                                           height: 50,
                                           decoration: BoxDecoration(
-                                            color: role == 'admin' 
-                                                ? Colors.purple
-                                                : Colors.indigo[400],
+                                            color:Colors.indigo[400],
                                             shape: BoxShape.circle,
                                             boxShadow: _pressedUserId == userId 
                                                 ? [
                                                     BoxShadow(
-                                                      color: (role == 'admin' 
-                                                          ? Colors.purple.withValues(alpha: 0.4)
-                                                          : Colors.indigo).withValues(alpha: 0.4),
+                                                      color: Colors.indigo.withValues(alpha: 0.4),
                                                       blurRadius: 8,
                                                       spreadRadius: 1,
                                                     ),
@@ -414,7 +410,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
                                                 : [],
                                           ),
                                           child: Icon(
-                                            role == 'admin' ? Icons.admin_panel_settings : Icons.person,
+                                            Icons.person,
                                             color: Colors.white,
                                             size: 26,
                                           ),
@@ -445,9 +441,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
                                                   padding: const EdgeInsets.symmetric(
                                                       horizontal: 6, vertical: 2),
                                                   decoration: BoxDecoration(
-                                                    color: role == 'admin' 
-                                                        ? Colors.purple.withValues(alpha: 0.2)
-                                                        : Colors.indigo.withValues(alpha: 0.2),
+                                                    color: Colors.indigo.withValues(alpha: 0.2),
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Text(
@@ -455,9 +449,7 @@ class _UserPageState extends State<UserPage> with TickerProviderStateMixin {
                                                     style: GoogleFonts.poppins(
                                                       fontSize: 10,
                                                       fontWeight: FontWeight.w600,
-                                                      color: role == 'admin' 
-                                                          ? Colors.purple
-                                                          : Colors.indigo,
+                                                      color:Colors.indigo,
                                                     ),
                                                   ),
                                                 ),
