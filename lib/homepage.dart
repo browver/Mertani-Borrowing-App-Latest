@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:user_app/auth_service.dart';
 import 'package:user_app/firebase_services.dart';
 import 'package:toastification/toastification.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:user_app/image_model.dart';
 import 'package:user_app/notification_service.dart';
 
@@ -53,10 +54,24 @@ class _HomePageState extends State<HomePage> {
   List<String> categories = [];
 
   // Get User
-  Future<String> getCurrentUsername() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('username') ?? 'Unknown';
+  void _loadUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    setState(() {
+      currentUsername =
+          userDoc.data()?['username'] ??
+          user.email ??
+          'Unknown';
+    });
   }
+
 
   // Show Borrow Dialog
   Future<void> showBorrowDialog(
@@ -215,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 try {
-                  final borrowerName = await getCurrentUsername();
+                  final authService = AuthService();
 
                   // Add borrow record
                   await FirebaseFirestore.instance.collection('borrowed').add({
@@ -224,7 +239,8 @@ class _HomePageState extends State<HomePage> {
                     'sku': sku,
                     'category': category,
                     'amount': borrowQty,
-                    'by': borrowerName,
+                    'by': currentUsername ?? 'Unknown',
+                    'byUid': authService.getCurrentUserUID(),
                     'borrowDate': Timestamp.now(),
                     'status': 'dipinjam',
                     'notes': notes,
@@ -238,7 +254,8 @@ class _HomePageState extends State<HomePage> {
                     borrowAmount: borrowQty,
                   );
 
-                  final username = await getCurrentUsername();
+                  final email = FirebaseAuth.instance.currentUser?.email;
+                  final username = email ?? 'Unknown';
 
                   // Scheduler
                   NotificationService().cancelAllNotifications();
@@ -499,7 +516,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getCurrentUsername();
+    _loadUser();
 
     // Load categories
     firestoreServices.getCategories().listen((catList) {

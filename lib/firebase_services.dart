@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:crypto/crypto.dart';
@@ -8,7 +9,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:user_app/category_model.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:user_app/main.dart';
 import 'package:user_app/menu_dashboard.dart';
 import 'secrets.dart';
@@ -41,24 +41,12 @@ class FirestoreServices {
   }
 
   // Get User
-  static Future <String> getCurrentUsername() async {
-    try{
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    
-    if(userId == null) return 'Unknown';
-
-    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    if (doc.exists) {
-      final data = doc.data();
-      return data?['username'] ?? 'Unknown';
-    }
-
-    return 'Unknown';
-  } catch(e) {
-    return 'Unknown';
+  static Future<String> getCurrentUsername() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return 'Unknown';
+    return user.email ?? 'Unknown';
   }
-  }
+
   
 
   // get Items

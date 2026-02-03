@@ -343,7 +343,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     final quantity = data['amount'] ?? 0;
                     final sku = data['sku']?? data['item_sku'] ?? 'No SKU';
                     final timestamp = (data['timestamp'] as Timestamp).toDate();
-                    final user = data['by'] ?? data['user'] ?? data['user_email'] ?? 'Unknown';
+                    final user = data['by'] ?? data['user'] ??data['username'] ?? data['user_email'] ?? 'Unknown';
 
                     final actionText = _getActionText(action);
                     final actionColor = _getActionColor(action);

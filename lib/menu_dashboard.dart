@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
+import 'package:user_app/auth_service.dart';
 import 'package:user_app/chart_page.dart';
 import 'package:user_app/homepage.dart';
 import 'package:user_app/history_page.dart';
@@ -41,6 +42,17 @@ class _MyHomePageState extends State<MyHomePage>
     } else {
       return "Selamat Malam";
     }
+  }
+
+  // Greeting Name
+  String greetingName(String? email) {
+    if (email == null || email.isEmpty) return 'User';
+
+    final name = email.split('@').first;
+
+    if (name.isEmpty) return 'User';
+
+    return name[0].toUpperCase() + name.substring(1);
   }
 
   List<String> categories = [];
@@ -95,20 +107,35 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+    final authService = AuthService();
+    final uid = authService.getCurrentUserUID();
+
+    if (uid == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data();
+
     setState(() {
-      userName = prefs.getString('username') ?? 'User';
+      userName =
+          data?['username'] ??
+          (data?['email'] as String?)?.split('@').first ??
+          'User';
     });
   }
 
   // New method to get real-time borrowed items count
   Stream<int> _getBorrowedItemsStream() async* {
-    final prefs = await SharedPreferences.getInstance();
-    final currentUsername = prefs.getString('username') ?? '';
-
+    final authService = AuthService();
+    final email = authService.getCurrentUserEmail();
     yield* FirebaseFirestore.instance
         .collection('borrowed')
-        .where('by', isEqualTo: currentUsername)
+        .where('by', isEqualTo: email)
         .where('status', isEqualTo: 'dipinjam')
         .snapshots()
         .map((snaphsot) {
@@ -144,13 +171,13 @@ class _MyHomePageState extends State<MyHomePage>
 
   void _loadStats() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final currentUserName = prefs.getString('username') ?? '';
+      final authService = AuthService();
+      final email = authService.getCurrentUserEmail();
 
       // Get total borrowed items by current user
       final borrowedSnapshot = await FirebaseFirestore.instance
           .collection('borrowed')
-          .where('by', isEqualTo: currentUserName)
+          .where('by', isEqualTo: email)
           .where('status', isEqualTo: 'dipinjam')
           .get();
 
@@ -182,11 +209,11 @@ class _MyHomePageState extends State<MyHomePage>
   Map<String, IconData> categoryIcons = {};
 
   // Get User
-  Future<String> getCurrentUserName() async {
-    if (userName != null) return userName!;
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('username') ?? 'Unknown';
-  }
+  // Future<String> getCurrentUserName() async {
+  //   if (userName != null) return userName!;
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getString('username') ?? 'Unknown';
+  // }
 
   // Admin only - Add Product Dialog
   void showAddProductDialog(BuildContext context) {
@@ -304,7 +331,7 @@ class _MyHomePageState extends State<MyHomePage>
                     int.tryParse(quantityController.text.trim()) ?? 0;
                 final merk = merkController.text.trim();
                 final sku = skuController.text.trim();
-                final byId = await getCurrentUserName();
+                final byId = userName ?? 'Unknown';
 
                 if (product.isNotEmpty && sku.isNotEmpty) {
                   await firestoreServices.addProduct(
@@ -363,7 +390,7 @@ class _MyHomePageState extends State<MyHomePage>
           ),
         ),
         title: Text(
-          '\n ${getGreeting()} ${userName ?? 'User'}👋',
+          '\n ${getGreeting()} ${greetingName(userName)}👋',
           style: GoogleFonts.interTight(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -550,7 +577,7 @@ class _MyHomePageState extends State<MyHomePage>
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: Colors.deepOrange[400]!,
-                      width: 3.0
+                      width: 3.0,
                     ),
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -927,13 +954,13 @@ class MyBorrowingsPage extends StatelessWidget {
       return userName!;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (userId == null) return 'Unknown';
+    final authService = AuthService();
+    final email = authService.getCurrentUserEmail();
+    if (email == null) return 'Unknown';
 
     final doc = await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(email)
         .get();
     if (doc.exists) {
       final data = doc.data();
@@ -964,7 +991,7 @@ class MyBorrowingsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.indigo,
         title: Text(
-          'Pinjaman $userName',
+          'Pinjaman ${userName == null || userName!.isEmpty ? 'User' : userName!.split('@').first[0].toUpperCase() + userName!.split('@').first.substring(1)}',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w600,

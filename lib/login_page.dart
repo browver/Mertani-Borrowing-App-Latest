@@ -1,11 +1,13 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'auth_service.dart';
 // import 'package:User_App/homepage.dart';
 // import 'package:flutter_application_2/menu_dashboard.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:user_app/firebase_services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:user_app/firebase_services.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
@@ -36,92 +38,61 @@ String hashPassword(String password) {
 //---------------------------
 
 Future<void> _handleLogin() async {
-  if (_formKey.currentState!.validate()) {
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _isLoading = true;
-    });
+  if (!_formKey.currentState!.validate()) return;
 
-    await Future.delayed(Duration(seconds: 1));
+  setState(() => _isLoading = true);
 
-    String inputUsername = _usernameController.text.trim();
-    String inputPassword = _passwordController.text;
+  try {
+    final input = _usernameController.text.trim().toLowerCase();
+    final password = _passwordController.text;
 
-    try {
-      QuerySnapshot userQuery = await FirebaseFirestore.instance
-      .collection('users')
-      .where('username', isEqualTo: inputUsername)
-      .limit(1)
-      .get();
+    final email = input.contains('@')
+        ? input
+        : '$input@outlook.com';
 
-      if(userQuery.docs.isEmpty) {
-        setState(() {
-          _isLoading = false;
-        });
-        if(!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User tidak ditemukan'), backgroundColor: Colors.red),
-        );
-        return;
-      }
-    
-      if (userQuery.docs.isNotEmpty) {
-        var userData = userQuery.docs.first.data() as Map<String, dynamic>;
-        String? storedPassword = userData['password'];
+    await AuthService().signInWithEmailPassword(email, password);
 
-        if(storedPassword == null || storedPassword.isEmpty) {
-          throw Exception('Password belum di-set');
-        }
+    if (!mounted) return;
 
-        if (inputPassword == storedPassword) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('isLoggedIn', true);
-          await prefs.setString('userId', userQuery.docs.first.id);
-          await prefs.setString('username', userData['username']);
-          await FirestoreServices().updateUnknownHistroryEntries();
+    final user = FirebaseAuth.instance.currentUser;
 
-          if(!mounted) return;
-          setState(() {
-            _isLoading = false;
-          });
+    if (user != null) {
+      final userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
 
-          _usernameController.clear();
-          _passwordController.clear();
-
-          Navigator.pushNamedAndRemoveUntil(context, '/homepage', (route) => false);
-          return;
-        }
-        if(!mounted) return;               
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pengguna tidak dikenali'), backgroundColor: Colors.red),
-        );
-      }
-
-    // Login Gagal
-      setState(() {
-        _isLoading = false;
-      });
-      if (!mounted) return;
-      // Tampilkan pesan error jika login gagal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Username atau password salah'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Terjadi Kesalahan. Coba lagi'),
-          backgroundColor: Colors.red,
-          ));
+      await userRef.set({
+        'uid': user.uid,
+        'email': user.email,
+        'username': user.email?.split('@').first,
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
     }
+
+    if(!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/homepage',
+      (route) => false,
+    );
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.message ?? 'Login gagal'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } catch (_) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Terjadi kesalahan'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
 }
+
 
   @override
   Widget build(BuildContext context) {
