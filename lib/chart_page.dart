@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,25 +37,37 @@ class ChartPageState extends State<ChartPage> {
   }
 
   Future<void> _loadUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
     setState(() {
-      userName = prefs.getString('username') ?? 'User';
+      userName =
+          userDoc.data()?['username'] ??
+          user.email ??
+          'Unknown';
     });
   }
 
   // Get User
-  Future<String> getCurrentUserName() async {
-    if (userName != null) return userName!;
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('username') ?? 'Unknown';
-  }
+  // Future<String> getCurrentUserName() async {
+  //   if (userName != null) return userName!;
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getString('username') ?? 'Unknown';
+  // }
 
   // Load data dari Firebas
 
   Future<void> _loadChartData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final currentUser = prefs.getString('username') ?? 'Unknown';
+      final currentUser = FirebaseAuth.instance.currentUser?.email;
+      if (currentUser == null) return;
+
       // Get borrowing frequency per category dari history
       final historySnapshot = await FirebaseFirestore.instance
           .collection('borrowed')
